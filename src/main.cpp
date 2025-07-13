@@ -6,6 +6,7 @@
 
 #include "command.h"
 #include "parser.h"
+#include "config.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -25,13 +26,18 @@ int main()
             currentDir = "~" + currentDir.substr(homeDir.length());
         }
 
+    string fileName = ".history";
+    createFile(fileName);
+    string colour = readConfig();
+
     // Just to make the startup a bit clean
     clear();
     while(true)
         {
-            cout << "\033[1;32m" << currentDir << "\033[0m $ ";
+            cout << "\033[38;2;" << colour << currentDir << " $" << "\033[0m ";
             getline(cin, input);
             if(input == "quit") { break; }
+            if(input == "test") { readConfig(); }
             parsedString = parse(input);
 
             if(parsedString.size() < 2) { dirs = ""; }
@@ -42,11 +48,15 @@ int main()
                     kwargs = parsedString[1];
                 }
 
+            dirs = Handle_Home(dirs);
+
             if(parsedString[0] == "pwd") { pwd(); }
+            else if(parsedString[0] == "echo") { echo(dirs, kwargs); }
             else if(parsedString[0] == "clear") { clear(); }
             else if(parsedString[0] == "ls") { listDir(dirs); }
             else if(parsedString[0] == "mkdir") { mkdir(dirs); }
             else if(parsedString[0] == "rm") { removeDir(dirs, kwargs); }
+            else if(parsedString[0] == "touch") { createFile(dirs); }
             else if(parsedString[0] == "cd")
                 {
                     cd(dirs);
